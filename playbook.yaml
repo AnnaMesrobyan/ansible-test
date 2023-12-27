@@ -1,0 +1,60 @@
+---
+- name: Test
+  hosts: all
+
+  tasks:
+    - name: Downloading_libarchive
+      get_url:
+        url: "https://github.com/libarchive/libarchive/releases/download/v3.7.2/libarchive-3.7.2.tar.xz"
+        dest: /opt/
+    
+    - name: unzip_libarchive
+      ansible.builtin.unarchive:
+        src: /opt/libarchive-3.7.2.tar.xz
+        dest: /opt/
+        remote_src: yes
+
+    - name: configure_make_libarchive
+      command: "{{ item }}"
+      args:
+        chdir: /opt/libarchive-3.7.2
+      with_items:
+        - ./configure --prefix=/usr --disable-static
+        - make
+
+    - name: make_install_libarchive
+      shell: make install
+      args:
+        chdir: /opt/libarchive-3.7.2
+      become: true
+
+    - name: Install lzip package
+      ansible.builtin.package:
+        name: lzip
+        state: present
+      become: true 
+
+    - name: Downloading_http_link_of_ed
+      get_url:
+        url: "https://ftp.gnu.org/gnu/ed/ed-1.19.tar.lz"
+        dest: /opt/
+
+    - name: unzip_ed
+      ansible.builtin.unarchive:
+        src: /opt/ed-1.19.tar.lz
+        dest: /opt/
+        remote_src: yes
+
+    - name: configure_make_ed
+      command: "{{ item }}"
+      args:
+        chdir: /opt/ed-1.19
+      with_items:
+        - ./configure --prefix=/usr
+        - make
+
+    - name: make_install_ed
+      shell: make install
+      args:
+        chdir: /opt/ed-1.19
+      become: true
